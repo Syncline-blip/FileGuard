@@ -1,5 +1,5 @@
 
-# FileGuard - File Sorter, THIS IS WHAT HAPPENS WHEN IBM BENCHES YOU FOR TOO LONG
+# FileGuard - File Sorter
 
 **FileGuard** is a file sorting tool that automatically organizes files into designated folders (Downloads, Desktop) and keeps track of sorted files with live updates in the UI. It uses Python with Tkinter for the UI, Watchdog for background monitoring, and Pillow for handling the icon image.
 
@@ -19,7 +19,11 @@ This project requires the following dependencies:
 - **Pillow**: For handling icons.
 
 You can install these dependencies using `requirements.txt`.
-
+## WIP/UPCOMING FEATURES
+- Duplicate Sorter
+- Folder Sorter
+- Set a target folder to arrange
+- AI
 ## Setup
 
 1. Clone the repository or download the project files to your local machine.
