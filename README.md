@@ -1,5 +1,5 @@
 
-# FileGuard - File Sorter, THIS IS WHAT HAPPENS WHEN IBM BENCHES YOU FOR TO LONG
+# FileGuard - File Sorter, THIS IS WHAT HAPPENS WHEN IBM BENCHES YOU FOR TOO LONG
 
 **FileGuard** is a file sorting tool that automatically organizes files into designated folders (Downloads, Desktop) and keeps track of sorted files with live updates in the UI. It uses Python with Tkinter for the UI, Watchdog for background monitoring, and Pillow for handling the icon image.
 
