@@ -15,7 +15,7 @@
   - Clearer status updates for sorting and background monitoring.
   - Updated labels and layout for better organization and ease of use.
 - Improved background monitoring for sorting Desktop and Downloads folders.
-- Enhanced Treeview display to only show files that are sorted into categories.
+- Enhanced Treeview display to only show files that are sorted into categories (wip)
 
 ---
 

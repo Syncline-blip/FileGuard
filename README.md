@@ -20,9 +20,7 @@ This project requires the following dependencies:
 
 You can install these dependencies using `requirements.txt`.
 ## WIP/UPCOMING FEATURES
-- Duplicate Sorter
-- Folder Sorter
-- Set a target folder to arrange
+- Duplicate Sorter/Deleter
 - AI
 ## Setup
 
