@@ -40,29 +40,35 @@ class FileGuardApp:
         self.root = root
         self.root.title("FileGuard")
 
-        # self.root.iconbitmap('backlog.ico')
         # Set a default size for the window and prevent resizing
-        self.root.geometry("900x400")
+        self.root.geometry("900x500")
         self.root.resizable(False, False)
 
-       
-        self.main_frame = tk.Frame(self.root)
-        self.main_frame.grid(row=0, column=0, sticky="nsew")
+        # Use modern font
+        self.style = ttk.Style()
+        self.style.configure("TButton", font=("Segoe UI", 12), padding=10)
+        self.style.configure("TLabel", font=("Segoe UI", 12))
+        self.style.configure("TTreeview", font=("Segoe UI", 10), rowheight=30)
+        self.style.configure("TCheckbutton", font=("Segoe UI", 12))
 
-        # Configure grid layout
+        # Main frame setup
+        self.main_frame = tk.Frame(self.root, bg="#f0f0f0")
+        self.main_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+
+        # Configure grid layout for responsiveness
         self.main_frame.grid_columnconfigure(0, weight=1, minsize=200)  # Left side for buttons
         self.main_frame.grid_columnconfigure(1, weight=3, minsize=600)  # Right side for Treeview
         self.main_frame.grid_rowconfigure(0, weight=1)  # Make sure the top row expands
 
-        # Button frame for buttons on the left
-        self.button_frame = tk.Frame(self.main_frame)
+        # Button frame for left side buttons
+        self.button_frame = tk.Frame(self.main_frame, bg="#f0f0f0")
         self.button_frame.grid(row=0, column=0, padx=10, pady=10, sticky="n")
 
-        # Sorted files frame for the Treeview on the right
-        self.sorted_files_frame = tk.Frame(self.main_frame)
+        # Sorted files frame for Treeview on the right
+        self.sorted_files_frame = tk.Frame(self.main_frame, bg="#f0f0f0")
         self.sorted_files_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
-        # Buttons (on the left side, equal size)
+        # Add Buttons with rounded, modern style
         self.desktop_button = ttk.Button(self.button_frame, text="Sort Desktop", command=self.sort_desktop)
         self.desktop_button.grid(row=0, column=0, padx=5, pady=10, sticky="ew")
 
@@ -72,21 +78,21 @@ class FileGuardApp:
         self.target_folder_button = ttk.Button(self.button_frame, text="Select Folder to Sort", command=self.sort_target)
         self.target_folder_button.grid(row=2, column=0, padx=5, pady=10, sticky="ew")
 
-
         self.background_var = tk.BooleanVar()
         self.background_check = ttk.Checkbutton(
             self.button_frame, text="Run in Background", variable=self.background_var, command=self.toggle_background
         )
         self.background_check.grid(row=4, column=0, padx=5, pady=10, sticky="ew")
 
-        # Status Label 
+        # Status Label with green color for idle
         self.status_label = ttk.Label(self.button_frame, text="Idle", foreground="green", width=25, anchor="w")
         self.status_label.grid(row=3, column=0, padx=5, pady=10, sticky="ew")
 
         # Live list of sorted files with two columns (on the right side)
-        self.sorted_files_label = ttk.Label(self.sorted_files_frame, text="Sorted Files:")
+        self.sorted_files_label = ttk.Label(self.sorted_files_frame, text="Sorted Files:", font=("Segoe UI", 14))
         self.sorted_files_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
+        # Treeview setup for displaying sorted files
         self.treeview = ttk.Treeview(self.sorted_files_frame, columns=("Folder", "File Path"), show="headings", height=15)
         self.treeview.heading("Folder", text="Folder")
         self.treeview.heading("File Path", text="File Path")
@@ -94,22 +100,46 @@ class FileGuardApp:
         self.treeview.column("File Path", width=500)
         self.treeview.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
+        # Apply some additional styling for rows
+        self.treeview.tag_configure("even", background="#f9f9f9")
+        self.treeview.tag_configure("odd", background="#ffffff")
+
         # Watchdog Observer
         self.observer = None
 
     def update_sorted_files(self, folder_path):
         """Update Treeview with files sorted into categories."""
-        # Clear the existing treeview
+        # Clear existing treeview
         for item in self.treeview.get_children():
             self.treeview.delete(item)
 
-        # Assuming files are sorted in subfolders under the given folder_path
+        files_found = False  # Flag to track if files are found
+
+        # Iterate through the categories in the folder
         for category in os.listdir(folder_path):
             category_path = os.path.join(folder_path, category)
-            if os.path.isdir(category_path):
+            if os.path.isdir(category_path):  # Ensure we're checking a directory
+                category_found = False  # Track if files were found in a category
                 for file_name in os.listdir(category_path):
                     file_path = os.path.join(category_path, file_name)
-                    self.treeview.insert("", tk.END, values=(category, file_path))
+                    # Ensure it's a file and not a folder
+                    if os.path.isfile(file_path):
+                        # Check if the file is within the intended folder and not nested further
+                        if file_path.startswith(folder_path):  
+                            self.treeview.insert("", tk.END, values=(category, file_path))
+                            category_found = True
+
+                # If no files were found in this category, we can skip it
+                if category_found:
+                    files_found = True
+
+        # If no files were found, insert a message indicating no files are available
+        if not files_found:
+            self.treeview.insert("", tk.END, values=("No files found", ""))
+
+
+
+
 
     def sort_desktop(self):
         desktop_folder = os.path.expanduser("~/Desktop")
@@ -121,7 +151,6 @@ class FileGuardApp:
 
     def sort_target(self):
         target_folder = filedialog.askdirectory(title="Select Folder to sort")
-
         if target_folder:
             self.sort_folder(target_folder)
 
@@ -144,12 +173,10 @@ class FileGuardApp:
     def start_background_monitoring(self):
         desktop_folder = os.path.expanduser("~/Desktop")
         downloads_folder = os.path.expanduser("~/Downloads")
-
         self.observer = Observer()
         self.observer.schedule(FileHandler(desktop_folder, self), desktop_folder, recursive=False)
         self.observer.schedule(FileHandler(downloads_folder, self), downloads_folder, recursive=False)
         self.observer.start()
-
 
     def stop_background_monitoring(self):
         if self.observer:
