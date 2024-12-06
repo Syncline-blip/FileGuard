@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from fileguard_logic import organize_files_dynamic, is_file_incomplete
@@ -68,12 +68,16 @@ class FileGuardApp:
 
         self.downloads_button = ttk.Button(self.button_frame, text="Sort Downloads", command=self.sort_downloads)
         self.downloads_button.grid(row=1, column=0, padx=5, pady=10, sticky="ew")
+        
+        self.target_folder_button = ttk.Button(self.button_frame, text="Select Folder to Sort", command=self.sort_target)
+        self.target_folder_button.grid(row=2, column=0, padx=5, pady=10, sticky="ew")
+
 
         self.background_var = tk.BooleanVar()
         self.background_check = ttk.Checkbutton(
             self.button_frame, text="Run in Background", variable=self.background_var, command=self.toggle_background
         )
-        self.background_check.grid(row=2, column=0, padx=5, pady=10, sticky="ew")
+        self.background_check.grid(row=4, column=0, padx=5, pady=10, sticky="ew")
 
         # Status Label 
         self.status_label = ttk.Label(self.button_frame, text="Idle", foreground="green", width=25, anchor="w")
@@ -98,7 +102,6 @@ class FileGuardApp:
         self.treeview.insert("", tk.END, values=(folder_name, file_path))
 
     def sort_desktop(self):
- 
         desktop_folder = os.path.expanduser("~/Desktop")
         self.sort_folder(desktop_folder)
 
@@ -106,9 +109,16 @@ class FileGuardApp:
         downloads_folder = os.path.expanduser("~/Downloads")
         self.sort_folder(downloads_folder)
 
+    def sort_target(self):
+        target_folder = filedialog.askdirectory(title="Select Folder to sort")
+
+        if target_folder:
+            self.sort_folder(target_folder)
+
     def sort_folder(self, folder_path):
         try:
             organize_files_dynamic(folder_path)
+            
             self.status_label.config(text=f"{os.path.basename(folder_path)} sorted!", foreground="green")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to sort {folder_path}: {e}")
