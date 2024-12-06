@@ -41,7 +41,7 @@ class FileGuardApp:
         self.root.title("FileGuard")
 
         # Set a default size for the window and prevent resizing
-        self.root.geometry("900x500")
+        self.root.geometry("800x500")
         self.root.resizable(False, False)
 
         # Use modern font
@@ -97,7 +97,7 @@ class FileGuardApp:
         self.treeview.heading("Folder", text="Folder")
         self.treeview.heading("File Path", text="File Path")
         self.treeview.column("Folder", width=150)
-        self.treeview.column("File Path", width=500)
+        self.treeview.column("File Path", width=300)
         self.treeview.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
         # Apply some additional styling for rows
