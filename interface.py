@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, messagebox
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from fileguard_logic import organize_files_dynamic, is_file_incomplete
@@ -26,7 +26,6 @@ class FileHandler(FileSystemEventHandler):
                         # Wait a bit to check if the file size stabilizes
                         time.sleep(2)
                         if os.path.getsize(file_path) == initial_size:  # If size is stable, file is fully downloaded
-                            print(f"File ready: {file_path}")  # Debug print
                             organize_files_dynamic(self.folder_path)
                             self.app.update_sorted_files(self.folder_path, file_path)
                             break
@@ -41,12 +40,12 @@ class FileGuardApp:
         self.root = root
         self.root.title("FileGuard")
 
+        # self.root.iconbitmap('backlog.ico')
         # Set a default size for the window and prevent resizing
         self.root.geometry("900x400")
         self.root.resizable(False, False)
 
-        self.target_folder = ""  # Initialize the variable to store the selected folder path
-
+       
         self.main_frame = tk.Frame(self.root)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
 
@@ -70,23 +69,15 @@ class FileGuardApp:
         self.downloads_button = ttk.Button(self.button_frame, text="Sort Downloads", command=self.sort_downloads)
         self.downloads_button.grid(row=1, column=0, padx=5, pady=10, sticky="ew")
 
-        # Button to select a target folder
-        self.select_folder_button = ttk.Button(self.button_frame, text="Select Target Folder", command=self.select_target_folder)
-        self.select_folder_button.grid(row=2, column=0, padx=5, pady=10, sticky="ew")
-
         self.background_var = tk.BooleanVar()
         self.background_check = ttk.Checkbutton(
             self.button_frame, text="Run in Background", variable=self.background_var, command=self.toggle_background
         )
-        self.background_check.grid(row=3, column=0, padx=5, pady=10, sticky="ew")
+        self.background_check.grid(row=2, column=0, padx=5, pady=10, sticky="ew")
 
         # Status Label 
         self.status_label = ttk.Label(self.button_frame, text="Idle", foreground="green", width=25, anchor="w")
-        self.status_label.grid(row=4, column=0, padx=5, pady=10, sticky="ew")
-
-        # Label to display the selected folder path
-        self.selected_folder_label = ttk.Label(self.button_frame, text="Selected Folder: None", width=50, anchor="w")
-        self.selected_folder_label.grid(row=5, column=0, padx=5, pady=10, sticky="ew")
+        self.status_label.grid(row=3, column=0, padx=5, pady=10, sticky="ew")
 
         # Live list of sorted files with two columns (on the right side)
         self.sorted_files_label = ttk.Label(self.sorted_files_frame, text="Sorted Files:")
@@ -104,30 +95,23 @@ class FileGuardApp:
 
     def update_sorted_files(self, folder, file_path):
         folder_name = "Downloads" if folder == os.path.expanduser("~/Downloads") else "Desktop"
-        print(f"File added to the list: {file_path}")  # Debug print
         self.treeview.insert("", tk.END, values=(folder_name, file_path))
 
     def sort_desktop(self):
+ 
         desktop_folder = os.path.expanduser("~/Desktop")
-        print(f"Sorting Desktop: {desktop_folder}")  # Debug print
         self.sort_folder(desktop_folder)
 
     def sort_downloads(self):
         downloads_folder = os.path.expanduser("~/Downloads")
-        print(f"Sorting Downloads: {downloads_folder}")  # Debug print
         self.sort_folder(downloads_folder)
 
     def sort_folder(self, folder_path):
-        if self.target_folder:
-            try:
-                print(f"Organizing files in {folder_path} to {self.target_folder}")  # Debug print
-                organize_files_dynamic(folder_path, self.target_folder)  # Pass target folder to the sorting function
-                self.status_label.config(text=f"{os.path.basename(folder_path)} sorted!", foreground="green")
-            except Exception as e:
-                self.status_label.config(text=f"Error: {e}", foreground="red")
-                print(f"Error: {e}")  # Debug print for errors
-        else:
-            self.status_label.config(text="Target folder not selected!", foreground="red")
+        try:
+            organize_files_dynamic(folder_path)
+            self.status_label.config(text=f"{os.path.basename(folder_path)} sorted!", foreground="green")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to sort {folder_path}: {e}")
 
     def toggle_background(self):
         if self.background_var.get():
@@ -146,21 +130,12 @@ class FileGuardApp:
         self.observer.schedule(FileHandler(downloads_folder, self), downloads_folder, recursive=False)
         self.observer.start()
 
+
     def stop_background_monitoring(self):
         if self.observer:
             self.observer.stop()
             self.observer.join()
             self.observer = None
-
-    def select_target_folder(self):
-        # Open a dialog to select a target folder
-        selected_folder = filedialog.askdirectory(title="Select Target Folder")
-        if selected_folder:
-            self.target_folder = selected_folder
-            # Update the label to show the selected folder path
-            self.selected_folder_label.config(text=f"Selected Folder: {self.target_folder}")
-        else:
-            self.selected_folder_label.config(text="Selected Folder: None")
 
     def on_close(self):
         self.stop_background_monitoring()
