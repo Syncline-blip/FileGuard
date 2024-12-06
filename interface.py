@@ -140,7 +140,7 @@ class FileGuardApp:
 
 
 
-
+    
 
     def sort_desktop(self):
         desktop_folder = os.path.expanduser("~/Desktop")
