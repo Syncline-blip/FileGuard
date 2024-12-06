@@ -19,6 +19,10 @@
 
 ---
 
+## V1.3: Bug fixes from V1.2 and more
+- UI Changes
+- Bug fixes on list view
+
 ---
 ## Bugs TODO:
-- Bug when trying to sort an already sorted folder it shows files within sub folders that it was not specified to sort
+- ~~Bug when trying to sort an already sorted folder it shows files within sub folders that it was not specified to sort~~ (FIXED)
