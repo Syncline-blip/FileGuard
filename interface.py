@@ -97,9 +97,19 @@ class FileGuardApp:
         # Watchdog Observer
         self.observer = None
 
-    def update_sorted_files(self, folder, file_path):
-        folder_name = "Downloads" if folder == os.path.expanduser("~/Downloads") else "Desktop"
-        self.treeview.insert("", tk.END, values=(folder_name, file_path))
+    def update_sorted_files(self, folder_path):
+        """Update Treeview with files sorted into categories."""
+        # Clear the existing treeview
+        for item in self.treeview.get_children():
+            self.treeview.delete(item)
+
+        # Assuming files are sorted in subfolders under the given folder_path
+        for category in os.listdir(folder_path):
+            category_path = os.path.join(folder_path, category)
+            if os.path.isdir(category_path):
+                for file_name in os.listdir(category_path):
+                    file_path = os.path.join(category_path, file_name)
+                    self.treeview.insert("", tk.END, values=(category, file_path))
 
     def sort_desktop(self):
         desktop_folder = os.path.expanduser("~/Desktop")
@@ -118,7 +128,7 @@ class FileGuardApp:
     def sort_folder(self, folder_path):
         try:
             organize_files_dynamic(folder_path)
-            
+            self.update_sorted_files(folder_path)
             self.status_label.config(text=f"{os.path.basename(folder_path)} sorted!", foreground="green")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to sort {folder_path}: {e}")
