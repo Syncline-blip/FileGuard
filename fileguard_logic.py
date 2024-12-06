@@ -1,10 +1,8 @@
 import os
 import shutil
 from pathlib import Path
-import hashlib
-from collections import defaultdict
 import mimetypes
-import time
+from collections import defaultdict
 
 # File Categories
 FILE_CATEGORIES = {
@@ -39,24 +37,25 @@ def categorise_extension_dynamic(file_ext, file_path):
     return "Others"
 
 
-# Check if the folders exists
-def folder_setup(folder_path):
-    '''CREATE IF THE FOLDER/S DO NOT EXIST'''
-    for category in FILE_CATEGORIES.keys():
+# Check if the folders exists and create folders based on files in the directory
+def folder_setup(folder_path, category_map):
+    """Create folders only if there are files of that category."""
+    # Ensure category folders exist for categories with files
+    for category, files in category_map.items():
         category_path = os.path.join(folder_path, category)
-        os.makedirs(category_path, exist_ok=True)
-        
+        if not os.path.exists(category_path):  # Only create if the folder doesn't exist
+            os.makedirs(category_path)
+    
     others_path = os.path.join(folder_path, "Others")
-    os.makedirs(others_path, exist_ok=True)
-    
-    
+    if "Others" in category_map and not os.path.exists(others_path):
+        os.makedirs(others_path)
+
+
 def organize_files_dynamic(folder_path):
     """Dynamically organizes files in the given folder into categories."""
-    # Ensure category folders exist
-    folder_setup(folder_path)
-
     category_map = defaultdict(list)  # Map category names to their files
 
+    # Iterate over the files in the directory
     for file in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file)
 
@@ -65,10 +64,12 @@ def organize_files_dynamic(folder_path):
             category = categorise_extension_dynamic(file_ext, file_path)
             category_map[category].append(file_path)
 
-    # Move files into their categories
+    # Ensure category folders exist
+    folder_setup(folder_path, category_map)
+
+    # Move files into their respective categories
     for category, files in category_map.items():
         category_path = os.path.join(folder_path, category)
-        os.makedirs(category_path, exist_ok=True)
         for file_path in files:
             shutil.move(file_path, os.path.join(category_path, os.path.basename(file_path)))
 

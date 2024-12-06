@@ -124,18 +124,19 @@ class FileGuardApp:
                     file_path = os.path.join(category_path, file_name)
                     # Ensure it's a file and not a folder
                     if os.path.isfile(file_path):
-                        # Check if the file is within the intended folder and not nested further
-                        if file_path.startswith(folder_path):  
-                            self.treeview.insert("", tk.END, values=(category, file_path))
-                            category_found = True
+                        # Insert the file into the treeview
+                        self.treeview.insert("", tk.END, values=(category, file_path))
+                        category_found = True
 
-                # If no files were found in this category, we can skip it
+                # If files were found in this category, mark it as found
                 if category_found:
                     files_found = True
 
-        # If no files were found, insert a message indicating no files are available
+        # If no files were found, insert a message to indicate that
         if not files_found:
             self.treeview.insert("", tk.END, values=("No files found", ""))
+
+
 
 
 
@@ -156,6 +157,15 @@ class FileGuardApp:
 
     def sort_folder(self, folder_path):
         try:
+            # Check if there are any files to sort
+            files_to_sort = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+            
+            if not files_to_sort:
+                # If no files to sort, update the status and do nothing
+                self.status_label.config(text="No files to sort in this directory", foreground="red")
+                return
+
+            # Proceed with sorting only if there are files to sort
             organize_files_dynamic(folder_path)
             self.update_sorted_files(folder_path)
             self.status_label.config(text=f"{os.path.basename(folder_path)} sorted!", foreground="green")
