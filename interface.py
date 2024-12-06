@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from watchdog.observers import Observer
@@ -39,11 +40,18 @@ class FileGuardApp:
     def __init__(self, root):
         self.root = root
         self.root.title("FileGuard")
-
+       
+        
+    
         # Set a default size for the window and prevent resizing
         self.root.geometry("800x500")
         self.root.resizable(False, False)
+        if getattr(sys, 'frozen', False):  # Check if the app is running as a bundled executable
+            icon_path = os.path.join(sys._MEIPASS, 'icon.ico')
+        else:
+            icon_path = 'icon.ico'  # Path to icon for development
 
+        self.root.iconbitmap(icon_path)
         # Use modern font
         self.style = ttk.Style()
         self.style.configure("TButton", font=("Segoe UI", 12), padding=10)
@@ -100,6 +108,7 @@ class FileGuardApp:
         self.treeview.column("File Path", width=300)
         self.treeview.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
+        
         # Apply some additional styling for rows
         self.treeview.tag_configure("even", background="#f9f9f9")
         self.treeview.tag_configure("odd", background="#ffffff")
